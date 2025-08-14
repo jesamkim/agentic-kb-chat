@@ -43,8 +43,8 @@ A ReAct (Reasoning and Acting) pattern-based AI chatbot that leverages Amazon Be
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone https://github.com/jesamkim/agentic-kb-chat
+cd agentic-kb-chat
 ```
 
 2. Create virtual environment:
@@ -74,7 +74,7 @@ Update `config/settings.py` with your Knowledge Base configuration:
 class KnowledgeBaseSettings:
     kb_id = "YOUR_KB_ID"
     region = "us-west-2"
-    max_results = 10
+    max_results = 30
     search_type = "HYBRID"
 ```
 
