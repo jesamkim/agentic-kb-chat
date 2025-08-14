@@ -14,6 +14,41 @@ A ReAct (Reasoning and Acting) pattern-based AI chatbot that leverages Amazon Be
 
 ## Architecture
 
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    User[User] --> UI[Streamlit UI]
+    UI --> ReAct[ReAct Agent]
+    
+    subgraph "ReAct Pattern Flow"
+        ReAct --> Orchestration[Orchestration Agent]
+        Orchestration --> Action[Action Agent]
+        Action --> Response[Response Agent]
+        Response --> ReAct
+    end
+    
+    subgraph "AWS Services"
+        Action --> KB[Bedrock Knowledge Base]
+        KB --> OSS[OpenSearch Serverless]
+        KB --> S3[S3 Data Source]
+        Response --> Claude[Claude 3.7 Sonnet]
+        Action --> Rerank[Cohere Rerank 3.5]
+    end
+    
+    subgraph "Data Flow"
+        S3 --> Embeddings[Titan Embeddings V2]
+        Embeddings --> OSS
+        OSS --> Citations[Citation System]
+        Citations --> UI
+    end
+    
+    subgraph "Session Management"
+        UI --> Session[Session Manager]
+        Session --> Memory[Conversation Memory]
+    end
+```
+
 ### Core Components
 
 - **ReAct Agent**: Main orchestration agent implementing the ReAct pattern
@@ -27,23 +62,80 @@ A ReAct (Reasoning and Acting) pattern-based AI chatbot that leverages Amazon Be
 - **Backend**: Python, FastAPI
 - **Frontend**: Streamlit
 - **AI Models**: Amazon Bedrock Claude 3.7 Sonnet
+- **Embeddings**: Amazon Titan Embeddings V2
 - **Vector Store**: OpenSearch Serverless
 - **Knowledge Base**: Amazon Bedrock Knowledge Base
 - **Session Management**: Custom session handling with cleanup
+- **ReRank**: Cohere Rerank 3.5 (optional)
+
+## Prerequisites
+
+### AWS Account Setup
+
+- AWS Account with appropriate permissions
+- AWS CLI configured with credentials
+- Access to Amazon Bedrock service in your region
+
+### Required AWS Services Access
+
+Before setting up this project, ensure you have access to the following AWS services:
+
+1. **Amazon Bedrock** - For foundation models and Knowledge Base
+2. **Amazon OpenSearch Serverless** - For vector storage
+3. **Amazon S3** - For document storage
+4. **AWS IAM** - For service roles and permissions
+
+## Amazon Bedrock Knowledge Base Setup
+
+### Step 1: Enable Model Access
+
+1. Navigate to Amazon Bedrock console
+2. In the left sidebar, click **Model access**
+3. Select **Enable specific models**
+4. Enable the following models:
+   - **Claude 3.7 Sonnet** (for response generation)
+   - **Titan Embeddings V2** (for document embeddings)
+   - **Cohere Rerank 3.5** (optional, for result reranking)
+5. Wait for **Access Status** to show **Access granted**
+
+### Step 2: Prepare Data Source
+
+1. Create an S3 bucket for your documents
+2. Upload your documents (PDF, TXT, DOCX, etc.) to the bucket
+3. Ensure proper IAM permissions for Bedrock to access the S3 bucket
+
+### Step 3: Create Knowledge Base
+
+1. In Amazon Bedrock console, navigate to **Knowledge bases**
+2. Click **Create knowledge base**
+3. **Basic Configuration**:
+   - Enter knowledge base name and description
+   - Choose or create an IAM service role
+4. **Data Source Configuration**:
+   - Select **S3** as data source
+   - Choose your S3 bucket and prefix
+   - Configure chunking strategy (recommended: Hierarchical)
+5. **Embeddings Model**:
+   - Select **Titan Embeddings V2**
+   - Choose embedding dimensions (1024 recommended)
+6. **Vector Database**:
+   - Select **OpenSearch Serverless**
+   - Choose to create new collection or use existing
+   - Configure index settings
+7. Review and create the knowledge base
+8. Wait for the knowledge base to be **Active** and sync completed
+
+### Step 4: Note Your Knowledge Base ID
+
+After creation, copy your Knowledge Base ID (format: `XXXXXXXXXX`) - you'll need this for configuration.
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.8+
-- AWS CLI configured with appropriate permissions
-- Amazon Bedrock Knowledge Base setup
-
-### Setup
+### Local Setup
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/jesamkim/agentic-kb-chat
+git clone https://github.com/jesamkim/agentic-kb-chat.git
 cd agentic-kb-chat
 ```
 
@@ -72,7 +164,7 @@ Update `config/settings.py` with your Knowledge Base configuration:
 
 ```python
 class KnowledgeBaseSettings:
-    kb_id = "YOUR_KB_ID"
+    kb_id = "YOUR_KB_ID"  # Replace with your actual KB ID
     region = "us-west-2"
     max_results = 30
     search_type = "HYBRID"
@@ -87,6 +179,18 @@ class ModelSettings:
     primary_model_id = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
     region = "us-west-2"
     temperature = 0.0
+```
+
+### AWS Credentials
+
+Ensure your AWS credentials are configured:
+
+```bash
+aws configure
+# Or set environment variables:
+# export AWS_ACCESS_KEY_ID=your_access_key
+# export AWS_SECRET_ACCESS_KEY=your_secret_key
+# export AWS_DEFAULT_REGION=us-west-2
 ```
 
 ## Usage
@@ -172,10 +276,24 @@ python test_citation_filename_fix.py
 ```
 ├── src/
 │   ├── agents/          # ReAct agent implementations
+│   │   ├── react_agent.py      # Main ReAct orchestrator
+│   │   ├── orchestration.py    # Query analysis and planning
+│   │   ├── action.py           # Knowledge Base search
+│   │   └── response.py         # Response generation
 │   ├── mcp/            # MCP server and clients
+│   │   ├── server.py           # MCP server implementation
+│   │   ├── kb_client.py        # Knowledge Base client
+│   │   └── rerank_client.py    # ReRank service client
 │   └── utils/          # Utility functions and citation processing
+│       ├── citation.py         # Citation processing
+│       ├── session.py          # Session management
+│       ├── logger.py           # Logging utilities
+│       └── s3_utils.py         # S3 utilities
 ├── ui/                 # Streamlit user interface
+│   ├── app.py                  # Main Streamlit application
+│   └── .streamlit/             # Streamlit configuration
 ├── config/             # Configuration files
+│   └── settings.py             # Application settings
 ├── tests/              # Test suites
 ├── logs/               # Application logs
 └── requirements.txt    # Python dependencies
@@ -195,6 +313,24 @@ python test_citation_filename_fix.py
 - Optimized Knowledge Base search queries
 - Enhanced session management
 - Improved error handling and logging
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Knowledge Base not found**: Verify your KB_ID in `config/settings.py`
+2. **AWS credentials error**: Ensure AWS CLI is configured or environment variables are set
+3. **Model access denied**: Check that required models are enabled in Bedrock console
+4. **Citation filename issues**: Ensure your documents have proper S3 URIs in metadata
+
+### Debug Mode
+
+Enable debug logging by setting:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
 
 ## Contributing
 
