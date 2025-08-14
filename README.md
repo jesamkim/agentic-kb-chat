@@ -33,7 +33,7 @@ graph TB
         KB --> OSS[OpenSearch Serverless]
         KB --> S3[S3 Data Source]
         Response --> Claude[Claude 3.7 Sonnet]
-        Action --> Rerank[Cohere Rerank 3.5]
+        Action -.-> Rerank[Cohere Rerank 3.5]
     end
     
     subgraph "Data Flow"
@@ -48,6 +48,8 @@ graph TB
         Session --> Memory[Conversation Memory]
     end
 ```
+
+> **Note**: The Cohere Rerank 3.5 model (shown with dotted line) is currently disabled in the system configuration. The application operates using direct Knowledge Base search results without reranking.
 
 ### Core Components
 
