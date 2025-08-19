@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 e70c8693ccc68dd5773d38438535490f08d1e5f5 jesamkim <jesamkim@gmail.com> 1755140621 +0000	commit (initial): Initial commit: Amazon Bedrock Knowledge Base RAG Chatbot with ReAct pattern
+e70c8693ccc68dd5773d38438535490f08d1e5f5 9ea8554cf2a5684f1e8636883fc1a3c7acc81a26 jesamkim <jesamkim@gmail.com> 1755140935 +0000	pull origin main --allow-unrelated-histories: Merge made by the 'ort' strategy.
+9ea8554cf2a5684f1e8636883fc1a3c7acc81a26 22e1fa277aaa2409ec9fe974190749dc7987d707 jesamkim <jesamkim@gmail.com> 1755141086 +0000	commit: Update README.md with correct repository URL and configuration
+22e1fa277aaa2409ec9fe974190749dc7987d707 cdec7c0844c98db8aaab705ecad03c211e353bbd jesamkim <jesamkim@gmail.com> 1755141427 +0000	commit: Enhance README.md with architecture diagram and KB setup guide
+cdec7c0844c98db8aaab705ecad03c211e353bbd a3afd4d835aa2f85e94dde349e650263660485ef jesamkim <jesamkim@gmail.com> 1755141587 +0000	commit: Update architecture diagram to reflect disabled Rerank functionality

@@ -1,0 +1,5 @@
+Update architecture diagram to reflect disabled Rerank functionality
+
+- Change Rerank connection to dotted line in Mermaid diagram
+- Add note explaining Cohere Rerank 3.5 is currently disabled
+- Clarify that application uses direct KB search results without reranking
