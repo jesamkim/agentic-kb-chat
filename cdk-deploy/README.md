@@ -2,28 +2,6 @@
 
 This directory contains AWS CDK infrastructure code to deploy the Agentic RAG Chatbot to AWS using a CloudFront -> ALB -> ECS Fargate architecture.
 
-## Architecture
-
-```mermaid
-flowchart LR
-    Client([Users]) --> CloudFront[CloudFront Distribution]
-    CloudFront --> ALB[Application Load Balancer]
-    ALB --> ECS[ECS Fargate Service]
-    
-    subgraph ECSContainer[ECS Container]
-        App[Streamlit App] --> ReActAgent[ReAct Agent]
-        ReActAgent --> IntentAnalyzer[Intent Analyzer]
-        ReActAgent --> MultiStageSearch[Multi-Stage Search]
-        ReActAgent --> ResponseAgent[Response Agent]
-        MultiStageSearch --> KBClient[KB Client]
-    end
-    
-    KBClient --> BedrockKB[Amazon Bedrock Knowledge Base]
-    BedrockKB --> OpenSearch[OpenSearch Serverless]
-    BedrockKB --> S3[S3 Data Source]
-    ResponseAgent --> Claude[Claude 3.7 Sonnet]
-```
-
 ## Prerequisites
 
 ### 1. AWS Account Setup
@@ -140,37 +118,6 @@ Edit `docker_app/config_file.py` to modify:
 - Execution role for container management
 - Minimal required permissions
 
-## Monitoring and Troubleshooting
-
-### Check Deployment Status
-```bash
-# ECS Service Status
-aws ecs describe-services --cluster agentic-rag-chatbot-cluster --services agentic-rag-chatbot-service
-
-# CloudFormation Stack Status
-aws cloudformation describe-stacks --stack-name agentic-rag-chatbot
-
-# View Logs
-aws logs tail /ecs/agentic-rag-chatbot --follow
-```
-
-### Common Issues
-
-1. **KB_ID not set**: Ensure environment variable is exported
-2. **Health check failures**: Check ECS task logs for application errors
-3. **502/503 errors**: Verify target group health and security group rules
-4. **Slow startup**: Initial container startup can take 2-3 minutes
-
-### Health Check Endpoint
-The application includes a health check endpoint at `/?health=check` that returns:
-```json
-{
-  "status": "healthy",
-  "timestamp": "2024-01-01T00:00:00",
-  "version": "1.0.0",
-  "service": "agentic-rag-chatbot"
-}
-```
 
 ## Cleanup
 
@@ -179,7 +126,7 @@ To remove all resources:
 cdk destroy
 ```
 
-## Cost Optimization
+## Cost Expectation
 
 ### Estimated Monthly Costs (us-west-2)
 - **ECS Fargate**: ~$30-50 (1 task, 1 vCPU, 2GB RAM)
@@ -188,31 +135,4 @@ cdk destroy
 - **NAT Gateway**: ~$45
 - **Total**: ~$100-120/month
 
-### Cost Reduction Options
-1. Use Fargate Spot for non-production workloads
-2. Implement CloudFront caching for static assets
-3. Use scheduled scaling to reduce capacity during off-hours
-4. Consider using VPC endpoints to eliminate NAT Gateway costs
 
-## Security Features
-
-- **Network Isolation**: ECS tasks in private subnets
-- **Custom Headers**: CloudFront to ALB authentication
-- **HTTPS Enforcement**: All traffic encrypted in transit
-- **Minimal IAM Permissions**: Least privilege access
-- **Security Groups**: Restrictive ingress rules
-
-## Scaling
-
-The deployment includes automatic scaling based on:
-- **CPU Utilization**: Target 70%
-- **Memory Utilization**: Target 80%
-- **Capacity**: 1-3 tasks (configurable)
-
-## Support
-
-For issues with the deployment:
-1. Check CloudWatch logs for application errors
-2. Verify all prerequisites are met
-3. Ensure environment variables are correctly set
-4. Review AWS service quotas and limits
