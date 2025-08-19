@@ -1,5 +1,6 @@
 """
 Improved MCP RAG Chatbot - Final Safe Streamlit UI
+Citation 표시 기능이 포함된 최종 안전한 UI
 """
 
 import streamlit as st
@@ -15,12 +16,17 @@ import time
 import threading
 from queue import Queue
 
-# 프로젝트 루트를 Python path에 추가
-sys.path.append('/Workshop/agentic-kb-chat')
+# 프로젝트 루트를 Python path에 추가 (컨테이너 환경 대응)
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)  # /app 디렉토리
+sys.path.append(project_root)
+
+# 이미지 처리 유틸리티 import
+from utils.image_utils import process_image_for_bedrock, get_image_info
 
 from src.agents.react_agent_improved_safe import improved_react_agent
 from src.utils.session import SessionManager
-from src.utils.image_utils import process_image_for_bedrock, get_image_info
 from config.settings import settings
 from ui.citation_display import display_citation_expandable_with_id, display_citation_expandable
 
@@ -419,12 +425,12 @@ def process_enhanced_query_with_progress(query: str, image_data: Optional[str] =
 
 def main():
     # 헤더
-    st.title("🤖 Agentic AI Assistant")
+    st.title("🤖 Agentic RAG chatbot")
     
     # 고정된 레인보우 그라데이션 이탤릭체 텍스트 (왼쪽 정렬)
     st.markdown("""
     <style>
-    .rainbow-text {
+    .rainbow-subtitle-docker {
         font-style: italic;
         font-size: 16px;
         background: linear-gradient(90deg, 
@@ -438,12 +444,12 @@ def main():
         font-weight: 500;
     }
     </style>
-    <div class="rainbow-text">created by AWS MFG</div>
+    <div class="rainbow-subtitle-docker">개선된 ReAct 기반 AI 어시스턴트 - 완전한 Citation 표시 지원</div>
     """, unsafe_allow_html=True)
     
     # 사이드바 설정
     with st.sidebar:
-        st.header("⚙️ 설정")
+        st.header("⚙️ 개선된 설정 (Final)")
         
         # KB_ID 설정
         st.subheader("Knowledge Base 설정")

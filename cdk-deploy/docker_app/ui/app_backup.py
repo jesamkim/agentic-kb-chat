@@ -25,7 +25,6 @@ sys.path.append('/Workshop/mcp-rag')
 
 from src.agents.react_agent import ReActAgent
 from src.utils.session import SessionManager
-from src.utils.image_utils import process_image_for_bedrock, get_image_info
 from config.settings import settings
 
 # 페이지 설정
@@ -793,7 +792,7 @@ def main():
     # 고정된 레인보우 그라데이션 이탤릭체 텍스트 (왼쪽 정렬)
     st.markdown("""
     <style>
-    .rainbow-subtitle-backup {
+    .rainbow-subtitle-docker-backup {
         font-style: italic;
         font-size: 16px;
         background: linear-gradient(90deg, 
@@ -807,7 +806,7 @@ def main():
         font-weight: 500;
     }
     </style>
-    <div class="rainbow-subtitle-backup">Amazon Bedrock Knowledge Base를 활용한 ReAct 기반 AI 어시스턴트</div>
+    <div class="rainbow-subtitle-docker-backup">Amazon Bedrock Knowledge Base를 활용한 ReAct 기반 AI 어시스턴트</div>
     """, unsafe_allow_html=True)
     
     # 사이드바 설정
@@ -929,31 +928,13 @@ def main():
             st.error("세션이 생성되지 않았습니다. 새로고침 후 다시 시도해주세요.")
             return
         
-        # 이미지 처리 (5MB 제한 대응)
+        # 이미지 처리
         image_data = None
         image_display = None
         if uploaded_image is not None:
-            # 원본 이미지 정보 표시
-            original_image = Image.open(uploaded_image)
-            original_info = get_image_info(original_image)
-            
-            # 5MB 초과 시 경고 메시지 표시
-            if original_info["size_mb"] > 5.0:
-                st.warning(f"⚠️ 이미지 크기가 {original_info['size_mb']}MB로 Bedrock 제한(5MB)을 초과합니다. 자동으로 리사이징합니다.")
-            
-            # 이미지 처리 (리사이징 포함)
-            with st.spinner("이미지 처리 중..."):
-                image_data, image_display = process_image_for_bedrock(uploaded_image)
-            
-            if image_data is None:
-                st.error("❌ 이미지 처리에 실패했습니다. 다른 이미지를 시도해보세요.")
-                return
-            
-            # 처리된 이미지 정보 표시
-            processed_info = get_image_info(image_display)
-            if original_info["size_mb"] > 5.0:
-                st.success(f"✅ 이미지가 {processed_info['size_mb']}MB로 리사이징되었습니다.")
-                st.info(f"📊 원본: {original_info['width']}x{original_info['height']} ({original_info['size_mb']}MB) → 처리됨: {processed_info['width']}x{processed_info['height']} ({processed_info['size_mb']}MB)")
+            image = Image.open(uploaded_image)
+            image_data = encode_image_to_base64(image)
+            image_display = image
         
         # 사용자 메시지 추가
         user_message = {
