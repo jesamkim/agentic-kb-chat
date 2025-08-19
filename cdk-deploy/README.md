@@ -25,27 +25,7 @@ Your AWS credentials need permissions for:
 - CloudFront
 - IAM (roles and policies)
 - CloudWatch Logs
-
-## Quick Deployment
-
-### 1. Set Environment Variables
-```bash
-export KB_ID="your_knowledge_base_id"
-export AWS_REGION="us-west-2"  # Optional, defaults to us-west-2
-```
-
-### 2. Deploy
-```bash
-cd cdk-deploy
-./deploy.sh
-```
-
-The deployment script will:
-- Create Python virtual environment
-- Install dependencies
-- Bootstrap CDK (if needed)
-- Deploy the stack
-- Provide the CloudFront URL
+  
 
 ## Manual Deployment
 
